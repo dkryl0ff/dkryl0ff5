@@ -1,13 +1,13 @@
-
 <?php
-
 header('Content-Type: text/html; charset=UTF-8');
 
-$values = $_SESSION['form_data'] ?? [];
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $errors = $_SESSION['errors'] ?? [];
 $generated_credentials = $_SESSION['generated_credentials'] ?? null;
 $login = $_SESSION['login'] ?? null;
-
 
 try {
     $db_host = 'localhost';
@@ -29,160 +29,184 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма</title>
     <style>
-       :root {
-  --primary: #7c3aed;
-  --primary-hover: #571CB7FF;
-  --secondary: #f59e0b;
-  --error: #dc2626;
-  --success: #10b981;
-  --text: #1e293b;
-  --text-light: #64748b;
-  --bg: #f8fafc;
-  --border: #e2e8f0;
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
+        :root {
+            --primary: #7c3aed;
+            --primary-hover: #571CB7FF;
+            --secondary: #f59e0b;
+            --error: #dc2626;
+            --success: #10b981;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
 
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  color: var(--text);
-  background: linear-gradient(135deg, #2EC95AFF 0%, #2EC95AFF 100%);
-  line-height: 1.6;
-}
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: var(--text);
+            background: linear-gradient(135deg, #2EC95AFF 0%, #2EC95AFF 100%);
+            line-height: 1.6;
+        }
 
-.form-group {
-  margin-bottom: 1.5rem;
-  position: relative;
-}
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
 
-label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
+        label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
 
-.input-label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text);
-}
+        .input-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
 
-.input-group {
-  margin-top: 0.5rem;
-}
+        .input-group {
+            margin-top: 0.5rem;
+        }
 
-.input-option {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
+        .input-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
 
-.input-option:hover {
-  background-color: rgba(124, 58, 237, 0.05);
-}
+        .input-option:hover {
+            background-color: rgba(124, 58, 237, 0.05);
+        }
 
-.input-option input[type="radio"],
-.input-option input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary);
-  margin: 0;
-  transform: scale(1);
-}
+        .input-option input[type="radio"],
+        .input-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            margin: 0;
+            transform: scale(1);
+        }
 
-.option-label {
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  margin-bottom: 0;
-}
+        .option-label {
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 0;
+        }
 
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 1rem 1.5rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
-  background-color: white;
-  font-size: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow);
-}
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: white;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+        }
 
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
-  transform: translateY(-2px);
-}
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+            transform: translateY(-2px);
+        }
 
-select[multiple] {
-  min-height: 120px;
-  padding: 1rem;
-  background-image: none;
-}
+        select[multiple] {
+            min-height: 120px;
+            padding: 1rem;
+            background-image: none;
+        }
 
-.error {
-  border-color: var(--error) !important;
-  animation: pulse 0.5s;
-}
+        .error {
+            border-color: var(--error) !important;
+            animation: pulse 0.5s;
+        }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
 
-.error-message {
-  color: var(--error);
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background-color: rgba(220, 38, 38, 0.05);
-  border-radius: var(--radius-md);
-}
+        .error-message {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background-color: rgba(220, 38, 38, 0.05);
+            border-radius: var(--radius-md);
+        }
 
-.error-message::before {
-  content: "❗";
-}
+        .error-message::before {
+            content: "❗";
+        }
 
-.credentials {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow);
-  border-left: 4px solid var(--primary);
-}
-       
+        .credentials {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .login-info {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: var(--shadow);
+        }
+        
+        button:hover {
+            background: var(--primary-hover);
+            box-shadow: var(--shadow-hover);
+        }
     </style>
 </head>
 <body>
-    <?php if (!empty($login)): ?>
-        <p>Вы вошли как: <?= htmlspecialchars($login) ?> (<a href="login.php?action=logout">Выйти</a>)</p>
-    <?php else: ?>
-        <p><a href="login.php">Войти</a></p>
-    <?php endif; ?>
+    <div class="login-info">
+        <?php if (!empty($login)): ?>
+            Вы вошли как: <strong><?= htmlspecialchars($login) ?></strong> (<a href="login.php?action=logout">Выйти</a>)
+        <?php else: ?>
+            <a href="login.php">Войти</a>
+        <?php endif; ?>
+    </div>
 
     <?php if (!empty($generated_credentials)): ?>
         <div class="credentials">
@@ -233,24 +257,25 @@ select[multiple] {
             <?php endif; ?>
         </div>
 
-     <div class="form-group">
-    <label class="input-label">Пол*</label>
-    <div class="input-group">
-        <div class="input-option">
-            <input type="radio" id="gender_male" name="gender" value="male"
-                <?= ($values['gender'] ?? '') === 'male' ? 'checked' : '' ?> required>
-            <label for="gender_male" class="option-label">Мужской</label>
+        <div class="form-group">
+            <label class="input-label">Пол*</label>
+            <div class="input-group">
+                <div class="input-option">
+                    <input type="radio" id="gender_male" name="gender" value="male"
+                        <?= ($values['gender'] ?? '') === 'male' ? 'checked' : '' ?> required>
+                    <label for="gender_male" class="option-label">Мужской</label>
+                </div>
+                <div class="input-option">
+                    <input type="radio" id="gender_female" name="gender" value="female"
+                        <?= ($values['gender'] ?? '') === 'female' ? 'checked' : '' ?>>
+                    <label for="gender_female" class="option-label">Женский</label>
+                </div>
+            </div>
+            <?php if (!empty($errors['gender'])): ?>
+                <div class="error-message">Выберите пол</div>
+            <?php endif; ?>
         </div>
-        <div class="input-option">
-            <input type="radio" id="gender_female" name="gender" value="female"
-                <?= ($values['gender'] ?? '') === 'female' ? 'checked' : '' ?>>
-            <label for="gender_female" class="option-label">Женский</label>
-        </div>
-    </div>
-    <?php if (!empty($errors['gender'])): ?>
-        <div class="error-message">Выберите пол</div>
-    <?php endif; ?>
-</div>
+
         <div class="form-group">
             <label for="languages">Языки программирования*</label>
             <select id="languages" name="languages[]" multiple 
@@ -271,24 +296,23 @@ select[multiple] {
             <label for="biography">Биография</label>
             <textarea id="biography" name="biography"><?= htmlspecialchars($values['biography'] ?? '') ?></textarea>
         </div>
-<div class="form-group">
-    <div class="input-group">
-        <div class="input-option">
-            <input type="checkbox" id="contract_agreed" name="contract_agreed"
-                <?= ($values['contract_agreed'] ?? false) ? 'checked' : '' ?> required>
-            <label for="contract_agreed" class="option-label">С контрактом ознакомлен*</label>
+
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-option">
+                    <input type="checkbox" id="contract_agreed" name="contract_agreed"
+                        <?= ($values['contract_agreed'] ?? false) ? 'checked' : '' ?> required>
+                    <label for="contract_agreed" class="option-label">С контрактом ознакомлен*</label>
+                </div>
+            </div>
+            <?php if (!empty($errors['contract_agreed'])): ?>
+                <div class="error-message">Необходимо согласие</div>
+            <?php endif; ?>
         </div>
-    </div>
-    <?php if (!empty($errors['contract_agreed'])): ?>
-        <div class="error-message">Необходимо согласие</div>
-    <?php endif; ?>
-</div>
 
         <button type="submit">Отправить</button>
     </form>
 </body>
 </html>
 <?php
-
 unset($_SESSION['errors'], $_SESSION['generated_credentials']);
-?>
